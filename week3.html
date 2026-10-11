@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>被改寫的圓桌・第三週：時空日曆與樹木箴言</title>
+<style>
+:root{--bg:#16181a;--slate:#24272a;--slate2:#2e3236;--bone:#ddd5c2;--dim:#8c8a80;--bronze:#b08a4a;--verd:#6aa396;--red:#b55a4a}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--bone);font-family:"Noto Serif TC","Songti TC","PMingLiU",serif;line-height:1.8}
+body{padding:env(safe-area-inset-top) 16px env(safe-area-inset-bottom);max-width:560px;margin:0 auto}
+h1{font-size:1.2rem;font-weight:600;letter-spacing:.25em;text-align:center;margin:28px 0 2px}
+.sub{text-align:center;color:var(--bronze);font-size:.9rem;letter-spacing:.2em;margin:0 0 8px}
+.intro{border-left:2px solid var(--bronze);padding:2px 14px;margin:10px 0 14px;font-size:.92rem}.intro p{margin:.4em 0}
+.lbl{font-size:.8rem;color:var(--dim);margin:16px 0 6px}
+button{font:inherit;color:inherit;touch-action:manipulation;cursor:pointer}
+button:focus-visible,input:focus-visible{outline:2px solid var(--verd);outline-offset:2px}
+/* 日曆轉盤 */
+.dial{position:relative;width:min(84vw,300px);aspect-ratio:1;margin:8px auto 14px}
+.dial svg{position:absolute;inset:0;width:100%;height:100%;fill:none;stroke:#4a4f55;stroke-width:1.5}
+.dial .mid{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);color:var(--dim);font-size:.8rem;letter-spacing:.3em}
+.rs{float:right;margin-top:-4px;padding:3px 14px;background:none;border:1px solid var(--bronze);color:var(--bronze);font-size:.8rem}
+.ctl{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;gap:22px}
+.col{display:flex;flex-direction:column;align-items:center}
+.st{width:58px;height:42px;background:var(--slate2);border:1px solid #555b61;color:var(--dim)}
+.st:active{color:var(--bronze);border-color:var(--bronze)}
+.v{font-size:2.1rem;font-family:ui-monospace,Menlo,Consolas,monospace;color:var(--bronze);line-height:1.4}
+.col small{color:var(--dim);font-size:.75rem;letter-spacing:.2em}
+.dn{position:absolute;width:68px;height:68px;transform:translate(-50%,-50%);border-radius:50%;background:linear-gradient(160deg,#3a3e42,#25282b);border:2px solid #555b61;font-size:1.05rem;letter-spacing:.08em;box-shadow:inset 0 0 12px #000a;transition:.3s}
+.dn.sel{border-color:var(--bronze);box-shadow:0 0 14px #b08a4a88,inset 0 0 12px #000a;color:var(--bronze)}
+.dn.used{opacity:.45}
+/* 事件 */
+.ev{display:block;width:100%;text-align:left;margin:8px 0;padding:12px 14px;background:var(--slate);border:1px solid #3a3f44;position:relative}
+.ev b{display:block;font-weight:600;letter-spacing:.08em}
+.ev .q{display:block;font-size:.84rem;color:var(--dim);padding-right:70px}
+.ev .chip{position:absolute;right:12px;top:50%;transform:translateY(-50%);min-width:54px;padding:4px 8px;text-align:center;border:1px dashed #555b61;color:var(--dim);font-size:.95rem}
+.ev.has .chip{border-style:solid;border-color:var(--bronze);color:var(--bronze)}
+.ev.act{border-color:var(--bronze);background:#2b2e31}
+.ev .chip{border-style:solid;border-color:var(--bronze);color:var(--bronze)}
+.ev.ok{border-color:var(--verd)}
+/* 樹木格 */
+.tree{margin:10px 0;padding:14px;background:var(--slate);border:1px solid #3a3f44;transition:.6s}
+.tree.locked{opacity:.5;text-align:center;color:var(--dim)}
+.tree.lit{border-color:var(--bronze);box-shadow:0 0 18px #b08a4a33}
+.tree.solved{border-color:var(--verd);box-shadow:0 0 18px #6aa39644}
+.tree .mo{margin:0 0 10px;font-size:.93rem}
+.row{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+.slot,.tile{width:44px;height:48px;display:grid;place-items:center;font-size:1.3rem;font-family:ui-monospace,Menlo,Consolas,monospace}
+.slot{border:1px dashed #555b61;background:#1b1d1f}
+.slot.f{border-style:solid;border-color:var(--bronze);color:var(--bronze)}
+.tile{background:var(--slate2);border:1px solid #555b61}
+.tile:disabled{opacity:.25}
+.tree.shake{animation:shake .3s}
+@keyframes shake{25%{transform:translateX(4px)}75%{transform:translateX(-4px)}}
+/* 最後選擇 */
+#final{margin:18px 0;padding:16px;border:1px solid var(--verd);text-align:center}
+.pick{display:flex;gap:8px;margin:10px 0}
+.pick button{flex:1;padding:12px 4px;background:transparent;border:1px solid var(--bronze);letter-spacing:.12em}
+.pick button small{display:block;color:var(--dim);font-size:.75rem}
+.in{display:flex;gap:8px}.in input{flex:1;min-width:0;padding:10px 12px;background:var(--slate);border:1px solid #3f444a;color:var(--bone);font:inherit}
+.in button{flex:0 0 76px;border:1px solid var(--bronze);background:transparent}
+/* 結果 */
+.res{margin:20px 0 40px;padding:24px 20px;animation:unroll 1.8s ease-out both}
+@keyframes unroll{from{clip-path:inset(0 0 100% 0);opacity:.2}to{clip-path:inset(0 0 0 0);opacity:1}}
+.res p{margin:0 0 1em;white-space:pre-line}
+.res .q{border-left:2px solid currentColor;padding-left:12px}
+.res .note{font-size:.9rem;opacity:.85;border-top:1px solid #0003;padding-top:12px}
+.res.oak{background:linear-gradient(160deg,#e3c98f,#c9a860);color:#3a2a10;box-shadow:0 0 40px #d9a53f66}
+.res.birch{background:linear-gradient(160deg,#dcdad2,#bdbab0);color:#2f3033}
+.res .t{font-size:.78rem;letter-spacing:.25em;opacity:.7}
+.code{margin-top:16px;text-align:center}.code small{display:block;font-size:.75rem;letter-spacing:.2em;opacity:.7}.code b{font-size:1.7rem;letter-spacing:.35em;user-select:all;-webkit-user-select:all}
+/* 紫杉彩蛋 */
+#yew{position:fixed;inset:0;z-index:99;background:#05090a;color:#7dffa6;font-family:ui-monospace,Menlo,Consolas,monospace;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;text-align:center;padding:24px;overflow-y:auto}
+#yew:before{content:"";position:fixed;inset:0;background:repeating-linear-gradient(0deg,#0000 0 2px,#0006 2px 3px);pointer-events:none}
+#yew .s1{position:absolute;left:0;right:0;top:42%;font-size:1.6rem}
+#yew .s2{opacity:0;animation:rise 1s 1.8s forwards;width:100%;margin:auto 0}
+#yew .mn{opacity:0;animation:rise 1.6s 5s forwards;margin:22px auto 8px;max-width:440px;padding:20px 18px;text-align:left;font-family:"Noto Serif TC","Songti TC",serif;font-size:.92rem;line-height:1.85;background:linear-gradient(160deg,#dcc48f,#b99a5a);color:#3a2a10;clip-path:polygon(0 3%,6% 0,15% 2%,30% 0,48% 3%,66% 0,84% 2%,100% 0,98% 40%,100% 62%,97% 100%,80% 97%,60% 100%,38% 97%,20% 100%,3% 98%,0 70%,2% 35%)}
+#yew .mn p{margin:0 0 .8em}#yew .mn .lead{font-size:.8rem;letter-spacing:.1em;opacity:.8}
+#yew .sys{opacity:0;animation:rise 1.4s 7s forwards;max-width:440px;margin:6px auto 26px;color:#7dffa6;font-size:.82rem;line-height:1.7}
+#yew svg{width:min(70vw,260px);height:auto}
+#yew .go{font-size:1.5rem;letter-spacing:.15em;margin:8px 0}
+#yew .msg{animation:blink 1.2s steps(2) infinite;color:#e9ffe0;margin-top:10px}
+@keyframes gl{25%{transform:translate(3px,0);text-shadow:-3px 0 #f55}75%{transform:translate(-3px,1px);text-shadow:3px 0 #5af}}
+@keyframes blink{50%{opacity:.35}}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}to{opacity:1}}
+#yew .s1{animation:gl .25s steps(2) 7,out .2s 1.7s forwards}
+@keyframes out{to{opacity:0;display:none;height:0}}
+#admin{display:none;font-size:.78rem;color:var(--dim);margin-bottom:40px}
+#admin table{width:100%;border-collapse:collapse}#admin td,#admin th{border-bottom:1px solid #333;padding:3px 4px;text-align:left;vertical-align:top}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01s!important;transition:none!important}}
+</style>
+</head>
+<body>
+<h1>被改寫的圓桌</h1>
+<p class="sub">第三週・時空日曆與樹木箴言</p>
+<div class="intro"><p>圓桌下的時空日曆停在三個日子。<br>點一個事件，再轉動日期，把日子放回它發生的地方。</p></div>
+
+<div class="lbl">圓桌時空日曆<span id="actLbl"></span><button class="rs" id="reset">重置</button></div>
+<div class="dial">
+ <svg viewBox="0 0 300 300"><circle cx="150" cy="150" r="140"/><circle cx="150" cy="150" r="108"/></svg>
+ <div class="ctl">
+  <div class="col"><button class="st" id="mU" aria-label="月份加一">▲</button><div class="v" id="mv">01</div><button class="st" id="mD" aria-label="月份減一">▼</button><small>月</small></div>
+  <div class="col"><button class="st" id="dU" aria-label="日期加一">▲</button><div class="v" id="dv">01</div><button class="st" id="dD" aria-label="日期減一">▼</button><small>日</small></div>
+ </div>
+</div>
+<div class="lbl">事件（點選後用上方日曆調整）</div>
+<div id="evs"></div>
+<div class="lbl">樹木箴言</div>
+<div id="trees"></div>
+<div id="final" style="display:none"></div>
+<div id="result"></div>
+
+<div id="admin"><p>後台紀錄（僅此瀏覽器）</p><div class="row"><button id="exp" style="padding:8px 12px;border:1px solid var(--bronze);background:none">匯出 CSV</button><button id="clr" style="padding:8px 12px;border:1px solid var(--bronze);background:none">清空</button></div><table id="logtbl"></table></div>
+
+<script>
+// ===== 每週只需改這一區 =====
+const WEEK = 3;
+const ENDPOINT = ""; // 選填：Google Apps Script / Formspree 網址
+const CODES = {oak:'', birch:'', yew:''}; // 選填：解完後要貼到群組的數字（留空就不顯示）
+const E = [ // 事件、正確日期、樹木、箴言、打散的字母
+ {id:'birch',name:'Anna 行動日',  date:'0305', hint:'她沒有哭泣，而是搶在命運之前，冷靜地佈下了最後一步棋。', word:'BIRCH', tiles:'HCIBR', icon:'🌿', motto:'潔白的樺樹象徵著清醒與新生。在亂世的風暴中，她拒絕成為無名的犧牲品。'},
+ {id:'yew',  name:'騎士遭暗殺日', date:'0312', hint:'當那名忠誠的騎士在暗影中倒下，王國的喪鐘正式敲響。', word:'YEW',   tiles:'WEY',   icon:'🌲', motto:'幽暗的紫杉連結著墓地與未知的異界。世人畏懼無法理解的力量，就像面對來自外星的訊號。'},
+ {id:'oak',  name:'John 逃亡日',  date:'0220', hint:'他卸下象徵榮耀的重劍，回頭奔向那個不被世俗容許的方向。', word:'OAK',   tiles:'KAO',   icon:'🌳', motto:'古老的橡樹見證了最深沉的根基。不是被魔法魅惑，而是心甘情願的臣服。'}
+];
+const RES = {
+ oak:{cls:'oak',t:'橡樹・梅林的魅惑筆記',p:[
+  ['當你將打散的英文字母重新拼湊，解開了象徵堅定根基的 Ogham 符文——OAK（橡樹）。'],
+  ['在筆記的最深處，夾層中掉出了一張梅林親筆寫下的私密手札。上面沒有宗教的詛咒，也沒有史官冰冷的偏見，只有梅林帶著苦笑的預言：'],
+  ['「那女孩不是巫妖，也不是普通的貴族。她是一面鏡子，照出了 John 心中最深的渴望。John 從來不是被魔法魅惑的——他是清醒著走進她的棋局，心甘情願地把劍交到她手上。因為對 John 來說，被她肆無忌憚地指揮，遠比擁有整個卡美洛特的榮耀更有意義。」','q'],
+  ['筆記的邊緣，梅林用極小的字寫下最後一句批註：'],
+  ['「這不是詛咒，這是世上最愚蠢也最動人的偏愛。」','note']]},
+ birch:{cls:'birch',t:'樺樹・貴族的女兒',p:[
+  ['當你將字母歸位，解開了象徵新生與清白的 Ogham 符文——BIRCH（樺樹）。'],
+  ['在王國邊境的殘破檔案與自治領土稅賦卷軸中，找到了關於她的真實紀錄：'],
+  ['「Anna 沒有任何超自然的力量，她只不過是沒落貴族家族中一個極其聰明、冷靜且清醒的女兒。面對卡美洛特崩毀的亂世，她拒絕成為政治聯姻的犧牲品，而是利用自己的智慧在棋局中謀求生路。至於她為什麼能指揮 John？那不是魔法，而是因為 John 敬佩她的膽識，自願成為她的防護網。」','q'],
+  ['檔案的空白處，留下了梅林的一段客觀註記：'],
+  ['「她隻身一人在權力的漩渦中掙扎，而世人卻用『妖怪』的汙名，來掩飾他們面對強者時的忌妒與無能。」','note']]}
+};
+const YEW_MSG='你救了我們，我們永遠感謝你';
+const YEW_SYS='（系統提示：此為趣味彩蛋支線，快把這個畫面截圖，去找那個出這個餿主意的 0 號吐槽吧！）';
+const YEW_LEAD='隨後，筆記殘頁上浮現了梅林極度無奈的吐槽：';
+const YEW_NOTE='「世人總是這樣，只要遇到聰明到無法理解、行事作風和大家不一樣的女性，就愛把人家當成『外星怪物』或『巫妖』。那些說她是被詛咒的異類的言論，簡直就像看見一個外星人在喊著『E.T. go home』一樣荒謬。不過話說回來……如果連這種跨越星際的荒謬感她都能淡定應對，那難怪 John 會心甘情願被她指揮得團團轉了。」';
+// ===== 以下為程式 =====
+const $=id=>document.getElementById(id);
+const assign={},placed={},solved={};let act='';
+const p2=n=>String(n).padStart(2,'0');
+function init(){E.forEach(e=>{assign[e.id]='0101';placed[e.id]=[];solved[e.id]=false});act=E[0].id}
+const lit=e=>assign[e.id]===e.date;
+const allDone=()=>E.every(e=>lit(e)&&solved[e.id]);
+function build(){
+ init();
+ $('mU').onclick=()=>step('m',1);$('mD').onclick=()=>step('m',-1);$('dU').onclick=()=>step('d',1);$('dD').onclick=()=>step('d',-1);
+ $('reset').onclick=()=>{
+  const prog=E.some(e=>assign[e.id]!=='0101'||placed[e.id].length||solved[e.id])||$('result').innerHTML||$('yew');
+  if(prog&&!confirm('要重置全部進度嗎？'))return;
+  init();$('final').innerHTML='';$('result').innerHTML='';render();log('reset','reset');
+ };
+ render();
+}
+function step(k,dl){
+ const e=E.find(x=>x.id===act);let m=+assign[act].slice(0,2),d=+assign[act].slice(2);
+ if(k==='m')m=(m-1+dl+12)%12+1;else d=(d-1+dl+31)%31+1;
+ const was=lit(e);assign[act]=p2(m)+p2(d);if(!was&&lit(e))log(assign[act]+'→'+act,'date-ok');render();
+}
+function render(){
+ const cur=assign[act];$('mv').textContent=cur.slice(0,2);$('dv').textContent=cur.slice(2);
+ $('actLbl').textContent='：'+E.find(x=>x.id===act).name;
+ const ev=$('evs');ev.innerHTML='';
+ E.forEach(e=>{const b=document.createElement('button');b.className='ev'+(act===e.id?' act':'')+(lit(e)?' ok':'');
+  b.innerHTML='<b>'+e.name+'</b><span class="q">'+e.hint+'</span><span class="chip">'+assign[e.id].slice(0,2)+'/'+assign[e.id].slice(2)+'</span>';
+  b.onclick=()=>{act=e.id;render()};ev.appendChild(b)});
+ const tr=$('trees');tr.innerHTML='';
+ E.forEach(e=>{const t=document.createElement('div');
+  if(!lit(e)){t.className='tree locked';t.textContent='？　尚未亮起';tr.appendChild(t);return}
+  t.className='tree lit'+(solved[e.id]?' solved':'');t.id='t'+e.id;
+  t.innerHTML='<p class="mo">'+e.icon+' '+e.motto+'</p>';
+  const sr=document.createElement('div');sr.className='row';
+  for(let i=0;i<e.word.length;i++){const s=document.createElement('button');const j=placed[e.id][i];s.className='slot'+(j!==undefined?' f':'');s.textContent=j!==undefined?e.tiles[j]:'';s.setAttribute('aria-label','第'+(i+1)+'格');
+   s.onclick=()=>{if(solved[e.id]||j===undefined)return;placed[e.id].splice(i,1);render()};sr.appendChild(s)}
+  const tl=document.createElement('div');tl.className='row';
+  [...e.tiles].forEach((c,j)=>{const b=document.createElement('button');b.className='tile';b.textContent=c;b.disabled=solved[e.id]||placed[e.id].includes(j);b.onclick=()=>put(e,j);tl.appendChild(b)});
+  t.append(sr,tl);tr.appendChild(t)});
+ final();
+}
+function put(e,j){
+ const p=placed[e.id];if(p.length>=e.word.length)return;p.push(j);
+ if(p.length===e.word.length){
+  if(p.map(k=>e.tiles[k]).join('')===e.word){solved[e.id]=true;log(e.word,'word-ok')}
+  else{const t=$('t'+e.id);render();const n=$('t'+e.id);n.classList.add('shake');setTimeout(()=>{placed[e.id]=[];render()},700);return}
+ }
+ render();
+}
+function final(){
+ const f=$('final');
+ if(!allDone()){f.style.display='none';f.innerHTML='';return}
+ if(f.innerHTML)return;
+ f.style.display='block';
+ f.innerHTML='<div>三棵樹都亮了。<br>選一棵，走進去。</div><div class="pick"><button data-k="oak">OAK<small>橡樹</small></button><button data-k="birch">BIRCH<small>樺樹</small></button><button data-k="yew">YEW<small>紫杉</small></button></div><div class="lbl">或輸入你想深入探索的代號：</div><div class="in"><input id="cin" type="text" placeholder="OAK / BIRCH / YEW" autocomplete="off" autocapitalize="characters"><button id="cgo">進入</button></div>';
+ f.querySelectorAll('.pick button').forEach(b=>b.onclick=()=>choose(b.dataset.k));
+ $('cgo').onclick=()=>{const v=$('cin').value.trim().toLowerCase();if(['oak','birch','yew'].includes(v))choose(v);else $('cin').value=''};
+ $('cin').addEventListener('keydown',x=>{if(x.key==='Enter')$('cgo').click()});
+}
+function choose(k){
+ log(k.toUpperCase(),'route-'+k);
+ if(k==='yew'){crash();return}
+ const S=RES[k],r=$('result');r.innerHTML='';
+ const d=document.createElement('div');d.className='res '+S.cls;d.innerHTML='<p class="t">'+S.t+'</p>';
+ S.p.forEach(x=>{const p=document.createElement('p');p.textContent=x[0];if(x[1])p.className=x[1];d.appendChild(p)});
+ if(CODES[k])d.insertAdjacentHTML('beforeend','<div class="code"><small>把這組數字傳到群組</small><b>'+CODES[k]+'</b></div>');
+ r.appendChild(d);d.scrollIntoView({behavior:'smooth',block:'start'});
+}
+function crash(){
+ if($('yew'))return;
+ const L=document.createElement('div');L.id='yew';L.setAttribute('role','alert');
+ L.innerHTML='<div class="s1">▒▒ 時空雜訊 ▒▒ ERR ▒▒</div><div class="s2"><svg viewBox="0 0 200 140" aria-hidden="true"><circle cx="100" cy="68" r="56" fill="#e9ffe0" opacity=".92"/><g fill="none" stroke="#05090a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="64" cy="92" r="15"/><circle cx="130" cy="92" r="15"/><path d="M64 92L92 92L112 64L88 64M92 92L88 64M112 64L128 70L130 92M122 66L130 58"/><path d="M92 64L96 48"/><path d="M96 48L110 52L112 64"/></g><circle cx="95" cy="40" r="6" fill="#05090a"/></svg><div class="go">E.T. go home</div><div class="msg">'+YEW_MSG+'</div><div class="mn"><p class="lead">'+YEW_LEAD+'</p><p>'+YEW_NOTE+'</p></div><p class="sys">'+YEW_SYS+'</p>'+(CODES.yew?'<div class="code" style="opacity:0;animation:rise 1s 8.8s forwards"><small>把這組數字傳到群組</small><b>'+CODES.yew+'</b></div>':'')+'</div>';
+ document.body.appendChild(L);
+ [...document.body.children].forEach(c=>{if(c!==L&&c.tagName!=='SCRIPT')c.inert=true});
+}
+// ---- 紀錄 ----
+const KEY='libra_log';
+const getLog=()=>{try{return JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){return[]}};
+function log(input,state){
+ const e={week:WEEK,time:new Date().toISOString(),input,state};
+ try{const a=getLog();a.push(e);localStorage.setItem(KEY,JSON.stringify(a))}catch(x){}
+ if(ENDPOINT){try{fetch(ENDPOINT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(e)})}catch(x){}}
+ drawLog();
+}
+const det=e=>e.input!==undefined?e.input:((e.left||[]).join('+')+' | '+(e.right||[]).join('+'));
+function drawLog(){
+ $('logtbl').innerHTML='<tr><th>時間</th><th>週</th><th>輸入</th><th>狀態</th></tr>'+getLog().slice().reverse().map(e=>'<tr><td>'+e.time.slice(5,16).replace('T',' ')+'</td><td>'+e.week+'</td><td>'+det(e)+'</td><td>'+e.state+'</td></tr>').join('');
+}
+$('exp').onclick=()=>{const csv='week,time,input,state\n'+getLog().map(e=>[e.week,e.time,'"'+det(e)+'"',e.state].join(',')).join('\n');const b=new Blob(['\ufeff'+csv],{type:'text/csv'});const l=document.createElement('a');l.href=URL.createObjectURL(b);l.download='libra_log.csv';l.click()};
+$('clr').onclick=()=>{if(confirm('清空此瀏覽器的紀錄？')){localStorage.removeItem(KEY);drawLog()}};
+if(location.hash==='#admin'){$('admin').style.display='block';drawLog()}
+build();
+</script>
+</body>
+</html>
