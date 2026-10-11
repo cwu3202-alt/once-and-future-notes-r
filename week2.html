@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>被改寫的圓桌・第二週：分歧的抉擇</title>
+<style>
+:root{--bg:#16181a;--slate:#24272a;--slate2:#2e3236;--bone:#ddd5c2;--dim:#8c8a80;--bronze:#b08a4a;--verd:#6aa396;--red:#b55a4a}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--bone);font-family:"Noto Serif TC","Songti TC","PMingLiU",serif;line-height:1.8}
+body{padding:env(safe-area-inset-top) 16px env(safe-area-inset-bottom);max-width:560px;margin:0 auto}
+h1{font-size:1.2rem;font-weight:600;letter-spacing:.25em;text-align:center;margin:28px 0 2px}
+.sub{text-align:center;color:var(--bronze);font-size:.9rem;letter-spacing:.3em;margin:0 0 8px}
+.intro{border-left:2px solid var(--bronze);padding:2px 14px;margin:10px 0 18px;font-size:.92rem}.intro p{margin:.4em 0}
+.roster{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0 12px}
+.nm{min-height:58px;padding:6px 2px;background:linear-gradient(160deg,#3a3e42,#25282b);border:1px solid #555b61;border-radius:6px;color:var(--bone);font:inherit;font-size:.95rem;cursor:pointer;touch-action:manipulation;box-shadow:inset 0 0 12px #0009}
+.nm.en{color:var(--bronze);font-size:.82rem;letter-spacing:.02em;border-color:var(--bronze)}
+.mq{color:var(--verd);font-size:.88rem;margin:6px 0 4px;padding-left:12px;border-left:2px solid #3a3f44}
+.stones{display:flex;gap:4px;justify-content:center;margin:18px 0 8px}
+.col{flex:1;max-width:64px;display:flex;flex-direction:column;gap:4px}
+.arr{height:40px;background:var(--slate2);color:var(--dim);border:1px solid #3f444a;font:inherit;cursor:pointer;touch-action:manipulation}
+.arr:active{color:var(--bone)}
+.stone{height:92px;display:grid;place-items:center;background:linear-gradient(160deg,#3a3e42,#25282b);border:1px solid #555b61;border-radius:8px 8px 4px 4px;box-shadow:inset 0 0 16px #000a}
+svg.rune{width:56%;height:64px;fill:none;stroke:var(--bone);stroke-width:3.4;stroke-linecap:square;stroke-linejoin:miter;transition:stroke .6s}
+.stones.ok svg.rune{stroke:var(--verd)}
+.btns{display:flex;gap:10px;margin:14px 0}
+.act{flex:1;padding:12px;background:transparent;color:var(--bone);border:1px solid var(--bronze);font:inherit;letter-spacing:.2em;cursor:pointer}
+.act.main{background:var(--bronze);color:#16181a}
+button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--verd);outline-offset:2px}
+details{margin:6px 0 14px;border:1px solid #3a3f44;padding:6px 12px;font-size:.85rem;color:var(--dim)}
+summary{cursor:pointer;padding:6px 0}
+.chart{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin:8px 0}
+.chart div{text-align:center;background:var(--slate);padding:4px 0}
+.chart svg{width:18px;height:34px;fill:none;stroke:var(--bone);stroke-width:3;stroke-linecap:square;stroke-linejoin:miter;display:block;margin:0 auto}
+.chart span{font-size:.75rem;color:var(--bronze)}
+.whisper{display:flex;gap:8px;margin:6px 0 4px}
+.whisper input{flex:1;min-width:0;padding:10px 12px;background:var(--slate);border:1px solid #3f444a;color:var(--bone);font:inherit}
+.whisper .act{flex:0 0 84px;padding:10px}
+.target{text-align:center;margin:12px 0 4px}.target small{display:block;color:var(--dim);font-size:.78rem;letter-spacing:.2em}.target b{display:block;color:var(--bronze);font-size:1.7rem;letter-spacing:.3em;font-family:ui-monospace,Menlo,Consolas,monospace}
+.lbl{font-size:.78rem;color:var(--dim);margin:14px 0 0}
+.tablet{margin:18px 0 40px;padding:26px 22px;min-height:200px;background:linear-gradient(160deg,#2c2f32,#202326);border:1px solid #444a50;box-shadow:inset 0 0 40px #0008}
+.tablet.silent{color:var(--dim);text-align:center}
+.tablet p{margin:0 0 1em;white-space:pre-line;opacity:0;animation:rise .9s forwards}
+.tablet .t{font-size:.8rem;color:var(--bronze);letter-spacing:.2em;opacity:1;animation:none}
+.tablet .note{color:var(--verd);border-top:1px solid #444a50;padding-top:14px;margin-top:6px}
+.tablet .q{color:#e9e1cc;border-left:2px solid var(--dim);padding-left:12px}
+.tablet.B .t{color:var(--verd)}
+@keyframes rise{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+.code{margin-top:22px;padding-top:16px;border-top:1px solid #444a50;text-align:center;opacity:0;animation:rise 1.2s forwards}
+.code small{display:block;color:var(--dim);font-size:.78rem;letter-spacing:.2em}
+.code b{display:block;color:var(--bronze);font-size:1.9rem;letter-spacing:.35em;margin-top:2px;user-select:all;-webkit-user-select:all}
+#lock{position:fixed;inset:0;z-index:99;background:#0b0c0d;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;animation:rise .4s both}
+#lock .e2{opacity:0;animation:rise 1s 1s forwards}
+#lock .lm{opacity:0;animation:rise 1.4s 2.2s forwards;margin:34px 0 10px;font-size:1.05rem}
+#lock .code{border-top:0}
+.err{text-align:center;font-family:ui-monospace,Menlo,Consolas,monospace;color:var(--red)}
+.err .e1{font-size:2rem;letter-spacing:.1em;animation:glitch .7s steps(2) infinite}
+.err .e2{margin-top:10px;color:var(--dim);letter-spacing:.05em}
+@keyframes glitch{25%{transform:translate(2px,0);text-shadow:-2px 0 #6aa396}50%{transform:translate(-2px,1px);text-shadow:2px 0 #b08a4a}75%{transform:translate(1px,-1px)}}
+#admin{display:none;font-size:.78rem;color:var(--dim);margin-bottom:40px}
+#admin table{width:100%;border-collapse:collapse}#admin td,#admin th{border-bottom:1px solid #333;padding:3px 4px;text-align:left;vertical-align:top}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.tablet p{opacity:1}}
+</style>
+</head>
+<body>
+<h1>被改寫的圓桌</h1>
+<p class="sub">第二週・分歧的抉擇</p>
+<div class="intro">
+<p>梅林的筆記翻到了第二章。<br>歷史在此出現裂痕。</p>
+<p>他留下了幾塊盧恩符文石，上面刻著「地獄客棧中那些未被史官記載的名字」。</p>
+<p>取出正確的字母，重新排列，你會看到兩條截然不同的歷史走向。</p>
+</div>
+
+<div class="lbl">石上刻著的名字（點一下，看英文名）</div>
+<div class="roster" id="roster"></div>
+<p class="mq">梅林說：<br>「有的名字只取開頭，有的名字藏著更後面的聲音。<br>當字母重新排列，卡美洛特與卡姆蘭的分歧就會出現。」</p>
+
+<div class="lbl">對石板低語（輸入你得到的數字）：</div>
+<div class="whisper"><input id="wh" type="text" placeholder="輸入文字或數字" autocomplete="off"><button class="act" id="wgo">低語</button></div>
+<div class="target" id="target" style="display:none"><small>石板上浮現的詞</small><b id="tw"></b></div>
+
+<div class="lbl">用盧恩符石把它排好：</div>
+<div class="stones" id="stones" aria-label="七顆盧恩符文石"></div>
+<div class="btns"><button class="act" id="reset">重置</button><button class="act main" id="go">刻印石板</button></div>
+
+<details><summary>梅林的符文對照表</summary><div class="chart" id="chart"></div></details>
+
+<div class="tablet silent" id="tablet" aria-live="polite">石板沉默著。<br>對它低語，或輸入你得到的數字。</div>
+
+<div id="admin"><p>後台紀錄（僅此瀏覽器）</p><div class="btns"><button class="act" id="exp">匯出 CSV</button><button class="act" id="clr">清空</button></div><table id="logtbl"></table></div>
+
+<script>
+// ===== 每週只需改這一區 =====
+const WEEK = 2;
+const ENDPOINT = ""; // 選填：Google Apps Script / Formspree 網址
+const SLOTS = 7;
+// 石頭拼出單字後，還要輸入對應的四位數字才會進入該路線；單字與數字不配對 → Error 220
+const ROUTES = {CAMELOT:{code:'0227',story:'A'}, CAMLANN:{code:'0219',story:'B'}};
+const STORY = {
+ A:{t:'CAMELOT・卡美洛特的誓言',cls:'A',p:[
+  ['你順著騎士誓言與王國律法的線索解開了謎題。\n歷史筆記翻到卡美洛特瀕臨崩解的戰局。\nJohn 選擇站在圓桌正中央，用斷裂的劍刃捍衛榮耀與命令。'],
+  ['但在官方紀錄的夾縫中，你發現一處被反覆塗改的備註：\n「騎士 John 與記錄員 Anna 之間，存在超出職務範圍的聯繫。此關係未被正式承認，卻多次影響任務分配。」'],
+  ['史官試圖用「忠誠」一詞掩蓋，卻掩蓋不住那份不尋常。'],
+  ['梅林筆記：\n「他們之間的線，從來不是史書願意寫清楚的那種。」','note']]},
+ B:{t:'CAMLANN・命運的終局',cls:'B',p:[
+  ['你拋開宏大的歷史法典，順著隱藏的私密線索解開了真相。\n殘破筆記的夾層掉出一張羊皮紙，上面是 John 的筆跡，以及另一行更淡的字跡：'],
+  ['「我知道你不討厭我。\n你只是……不知道該怎麼接住這份感情。」','q'],
+  ['史官在旁邊憤怒批註：\n「圓桌武士 John 於決戰前夕態度失常，其罪當查。」'],
+  ['在這條被抹去的歷史裡，Anna 從未用「討厭」拒絕過他。\n真正的原因，比拒絕更安靜，也更沉重。'],
+  ['梅林筆記：\n「有時候，不是不喜歡，而是根本不知道自己被喜歡了。」','note']]}
+};
+// 玩家解完後要貼到群組的數字（用來辨識他走哪條路線）。請換成你要的數字。
+const CODES={A:'0305',B:'0312',zero:'0220'};
+const NAMES=[['夏莉','Charlie'],['阿拉斯托','Alastor'],['晨星','Morningstar'],['安吉爾','Angel'],['路西法','Lucifer'],['妮芙蒂','Niffty'],['潘修斯','Pentious'],['霍斯克','Husk']];
+const TYPED_ANSWER='符文不聽文字的話。\n請用石頭拼出它。';
+// 24 個盧恩符文：l = 轉換後的字母（ᚦ=TH、ᛇ=EI、ᛜ=NG 會變成多個字母）
+const R=[
+ ['F','M8 4V36M8 14L18 6M8 24L18 16'],['U','M6 4V36M6 4L16 14V36'],['TH','M8 4V36M8 12L18 20L8 28'],
+ ['A','M8 4V36M8 6L18 14M8 16L18 24'],['R','M8 4V36M8 4L18 12L8 20L18 36'],['C','M16 10L6 20L16 30'],
+ ['G','M4 8L16 32M16 8L4 32'],['W','M8 4V36M8 4L18 12L8 20'],['H','M5 4V36M15 4V36M5 14L15 26'],
+ ['N','M10 4V36M4 14L16 24'],['I','M10 4V36'],['J','M13 6L6 13L13 20M7 22L14 29L7 36'],
+ ['EI','M10 4V36M10 4L4 12M10 36L16 28'],['P','M6 36V4H16V18H6'],['Z','M10 36V4M10 20L3 10M10 20L17 10'],
+ ['S','M14 4L6 16L14 22L6 34'],['T','M10 36V4M10 4L3 14M10 4L17 14'],['B','M6 4V36M6 4L15 12L6 20L15 28L6 36'],
+ ['E','M5 4V36M15 4V36M5 4L10 14L15 4'],['M','M5 4V36M15 4V36M5 4L15 20M15 4L5 20'],['L','M6 36V4M6 4L16 14'],
+ ['NG','M10 6L16 20L10 34L4 20Z'],['D','M5 4V36M15 4V36M5 4L15 36M15 4L5 36'],['O','M10 4L16 12L10 20L4 12ZM10 20L5 36M10 20L15 36']
+];
+// ===== 以下為程式 =====
+const $=id=>document.getElementById(id);
+const svg=(d,c)=>'<svg class="'+(c||'')+'" viewBox="0 0 20 40" aria-hidden="true"><path d="'+d+'"/></svg>';
+const idx=Array(SLOTS).fill(0);let tm;
+function buildRoster(){
+ const r=$('roster');r.innerHTML='';
+ NAMES.forEach(n=>{const b=document.createElement('button');b.className='nm';b.textContent=n[0];b.setAttribute('aria-pressed','false');
+  b.onclick=()=>{const on=b.classList.toggle('en');b.textContent=on?n[1]:n[0];b.setAttribute('aria-pressed',on)};r.appendChild(b)});
+}
+function build(){
+ const st=$('stones');st.innerHTML='';
+ for(let i=0;i<SLOTS;i++){
+  const c=document.createElement('div');c.className='col';
+  const u=document.createElement('button');u.className='arr';u.textContent='▲';u.setAttribute('aria-label','上一個符文');u.onclick=()=>step(i,-1);
+  const s=document.createElement('div');s.className='stone';s.id='s'+i;
+  const d=document.createElement('button');d.className='arr';d.textContent='▼';d.setAttribute('aria-label','下一個符文');d.onclick=()=>step(i,1);
+  c.append(u,s,d);st.appendChild(c);
+ }
+ $('chart').innerHTML=R.map(r=>'<div>'+svg(r[1])+'<span>'+r[0]+'</span></div>').join('');
+ draw();
+}
+function draw(){for(let i=0;i<SLOTS;i++)$('s'+i).innerHTML=svg(R[idx[i]][1],'rune');$('stones').classList.remove('ok')}
+function step(i,d){idx[i]=(idx[i]+d+R.length)%R.length;draw();silence()}
+const word=()=>idx.map(i=>R[i][0]).join('');
+function silence(){clearInterval(tm);const t=$('tablet');t.className='tablet silent';t.innerHTML='石板沉默著。<br>對它低語，或輸入你得到的數字。'}
+function para(t,txt,cls,delay){const p=document.createElement('p');p.textContent=txt;if(cls)p.className=cls;p.style.animationDelay=delay+'s';t.appendChild(p)}
+function addCode(t,c,delay){
+ if(!c)return;const d=document.createElement('div');d.className='code';d.style.animationDelay=delay+'s';
+ d.innerHTML='<small>把這組數字傳到群組</small><b>'+c+'</b>';t.appendChild(d);
+}
+function showStory(k){
+ const t=$('tablet'),S=STORY[k];t.className='tablet '+S.cls;t.innerHTML='<p class="t">'+S.t+'</p>';
+ S.p.forEach((x,i)=>para(t,x[0],x[1],i*1.3+.3));
+ addCode(t,CODES[k],S.p.length*1.3+.6);
+}
+function showMsg(m){const t=$('tablet');t.className='tablet silent';t.innerHTML='';const p=document.createElement('p');p.textContent=m;p.style.animationDelay='.1s';t.appendChild(p)}
+function showZero(){
+ if($('lock'))return;clearInterval(tm);
+ const L=document.createElement('div');L.id='lock';L.setAttribute('role','alert');
+ L.innerHTML='<div class="err"><div class="e1">Error 220</div><div class="e2">………………….錯誤………..</div></div><p class="lm">Anna 不對勁。<br>似乎不屬於這個世界。</p><div class="code" style="animation-delay:3.8s"><small>把這組數字傳到群組</small><b>'+CODES.zero+'</b></div>';
+ document.body.appendChild(L);
+ [...document.body.children].forEach(c=>{if(c!==L&&c.tagName!=='SCRIPT')c.inert=true});
+}
+// ---- 紀錄 ----
+const KEY='libra_log';
+const getLog=()=>{try{return JSON.parse(localStorage.getItem(KEY)||'[]')}catch(e){return[]}};
+function log(input,state){
+ const e={week:WEEK,time:new Date().toISOString(),input,state};
+ try{const a=getLog();a.push(e);localStorage.setItem(KEY,JSON.stringify(a))}catch(x){}
+ if(ENDPOINT){try{fetch(ENDPOINT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(e)})}catch(x){}}
+ drawLog();
+}
+const detail=e=>e.input!==undefined?e.input:((e.left||[]).join('+')+' | '+(e.right||[]).join('+'));
+function drawLog(){
+ $('logtbl').innerHTML='<tr><th>時間</th><th>週</th><th>輸入</th><th>狀態</th></tr>'+getLog().slice().reverse().map(e=>'<tr><td>'+e.time.slice(5,16).replace('T',' ')+'</td><td>'+e.week+'</td><td>'+detail(e)+'</td><td>'+e.state+'</td></tr>').join('');
+}
+let target=null;
+$('go').onclick=()=>{
+ const w=word();
+ if(!target){showZero();log(w,'no-code');return}
+ if(w===target){$('stones').classList.add('ok');const r=ROUTES[target];showStory(r.story);log(w,r.story)}
+ else{showMsg('符文沒有共鳴。\n再試一次。');log(w,'mismatch')}
+};
+$('wgo').onclick=()=>{
+ const v=$('wh').value.trim();if(!v)return;
+ const k=Object.keys(ROUTES).find(x=>ROUTES[x].code===v);
+ if(k){target=k;$('tw').textContent=k;$('target').style.display='block';showMsg('石板上浮現了一個詞。\n用盧恩符石把它排好。');log(v,'code-'+k)}
+ else if(ROUTES[v.toUpperCase()]){showMsg(TYPED_ANSWER);log(v,'typed-keyword')}
+ else{showZero();log(v,'zero')}
+};
+$('wh').addEventListener('keydown',e=>{if(e.key==='Enter')$('wgo').click()});
+$('reset').onclick=()=>{idx.fill(0);draw();silence()};
+$('exp').onclick=()=>{const csv='week,time,input,state\n'+getLog().map(e=>[e.week,e.time,'"'+detail(e)+'"',e.state].join(',')).join('\n');const b=new Blob(['\ufeff'+csv],{type:'text/csv'});const l=document.createElement('a');l.href=URL.createObjectURL(b);l.download='libra_log.csv';l.click()};
+$('clr').onclick=()=>{if(confirm('清空此瀏覽器的紀錄？')){localStorage.removeItem(KEY);drawLog()}};
+if(location.hash==='#admin'){$('admin').style.display='block';drawLog()}
+buildRoster();build();
+</script>
+</body>
+</html>
