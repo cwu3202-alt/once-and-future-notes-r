@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>被改寫的圓桌・第八週：藍與紅</title>
+<style>
+:root{--bg:#16181a;--fg:#ddd5c2;--dim:#8c8a80;--acc:#b08a4a;--pan:#24272a;--line:#3a3f44;--ok:#6aa396}
+body.modern{--bg:#dde4e6;--fg:#27363d;--dim:#66777f;--acc:#2f7388;--pan:#f1f5f6;--line:#b9c6cb;--ok:#2f7388}
+body.codex{--bg:#1d1812;--fg:#ddd5c2;--dim:#9a8f7a;--acc:#c7a45a;--pan:#2a2118;--line:#4a3d2b}
+body.night{--bg:#0e1114;--fg:#d8dde0;--dim:#7d8890;--acc:#7fb4c7;--pan:#161b1f;--line:#2c353b}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font-family:"Noto Serif TC","Songti TC","PMingLiU",serif;line-height:1.9;padding:env(safe-area-inset-top) 16px env(safe-area-inset-bottom);max-width:560px;margin:0 auto;transition:background 1.6s,color 1.6s;min-height:100vh}
+html{background:#16181a}
+h1{font-size:1.2rem;font-weight:600;letter-spacing:.25em;text-align:center;margin:28px 0 2px}
+.sub{text-align:center;color:var(--acc);font-size:.9rem;letter-spacing:.3em;margin:0 0 14px}
+button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
+button:focus-visible{outline:2px solid var(--ok);outline-offset:2px}
+#stage{min-height:260px}
+#stage p{margin:0 0 1em;white-space:pre-line;opacity:0;animation:rise .9s forwards}
+#stage .ch{color:var(--acc);font-size:.8rem;letter-spacing:.25em;opacity:1;animation:none}
+#stage .q{border-left:2px solid var(--dim);padding-left:12px}
+#stage .me{border-top:1px solid var(--line);padding-top:14px;color:var(--acc)}
+@keyframes rise{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+.bottles{display:flex;gap:18px;justify-content:center;margin:18px 0;opacity:0;animation:rise 1s forwards}
+.bottle{width:96px;padding:12px 6px;background:var(--pan);border:1px solid var(--line);border-radius:10px;letter-spacing:.3em}
+.bottle svg{width:54px;height:90px;display:block;margin:0 auto 6px}
+.bottle:hover,.bottle:focus-visible{border-color:var(--acc)}
+.card{margin:14px 0;padding:14px 16px;background:var(--pan);border:1px solid var(--line);font-size:.88rem;opacity:0;animation:rise 1s forwards}
+.card b{display:block;color:var(--acc);letter-spacing:.2em;font-size:.78rem;margin-bottom:6px}
+.card div{display:flex;gap:10px;padding:2px 0}.card div span:first-child{flex:0 0 3.2em;color:var(--dim)}
+.page{margin:14px 0;padding:26px 22px 22px;background:linear-gradient(160deg,#d9c79b,#c6b183);color:#2b1d0e;box-shadow:inset 0 0 40px #5a3d1a88,0 0 24px #0008;min-height:260px;border-radius:2px;animation:rise .8s}
+.page .fol{font-size:.72rem;letter-spacing:.3em;color:#6b4f27;margin-bottom:14px;font-family:ui-monospace,Menlo,Consolas,monospace}
+.page p{opacity:1!important;animation:none!important;margin:0 0 1em;white-space:pre-line}
+.page .q{border-left:2px solid #6b4f27;padding-left:12px}
+.page .me2{border-top:1px solid #6b4f2766;padding-top:12px;font-size:.92rem;color:#5a3d1a}
+#stage .sg{font-size:.88rem;color:var(--dim);margin-top:-.4em}
+.end{text-align:center;color:var(--dim);letter-spacing:.5em;margin-top:30px;opacity:0;animation:rise 1.4s forwards}
+.row{display:flex;gap:10px;margin:18px 0 40px}
+.btn{flex:1;padding:13px;background:transparent;border:1px solid var(--acc);color:var(--acc);letter-spacing:.3em}
+.btn.main{background:var(--acc);color:var(--bg)}
+.code{margin-top:20px;text-align:center;opacity:0;animation:rise 1.2s forwards}.code small{display:block;color:var(--dim);font-size:.78rem;letter-spacing:.2em}.code b{display:block;color:var(--acc);font-size:1.8rem;letter-spacing:.35em;user-select:all;-webkit-user-select:all}
+#admin{display:none;font-size:.78rem;color:var(--dim);margin-bottom:40px}
+#admin table{width:100%;border-collapse:collapse}#admin td,#admin th{border-bottom:1px solid var(--line);padding:3px 4px;text-align:left;vertical-align:top}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01s!important;transition:none!important}}
+</style>
+</head>
+<body>
+<h1>被改寫的圓桌</h1>
+<p class="sub">第八週・藍與紅</p>
+<div id="stage"></div>
+<div class="row"><button class="btn" id="prev" style="display:none">上一頁</button><button class="btn main" id="next" style="display:none"></button></div>
+
+<div id="admin"><p>後台紀錄（僅此瀏覽器）</p><div class="row"><button class="btn" id="exp">匯出 CSV</button><button class="btn" id="clr">清空</button></div><table id="logtbl"></table></div>
+
+<script>
+// ===== 每週只需改這一區 =====
+const WEEK = 8;
+const ENDPOINT = ""; // 選填：Google Apps Script / Formspree 網址
+const CODES = {end:''}; // 選填：看完後要貼到群組的數字（留空就不顯示）
+const GAP = 1.0;        // 每一段文字淡入的間隔（秒）
+const NAME = '吳傳典';  // 考古隊長的名字（想換成代稱就改這裡）
+// 薩根《暗淡藍點》：只放最廣為人知的那幾句。完整段落請自行貼進 SAGAN_FULL（留空就不顯示）。
+const SAGAN_SHORT = '「再看一眼那個點。那裡就是這裡。那是家。那是我們。」';
+const SAGAN_FULL = '';
+const SAGAN_CREDIT = '——卡爾・薩根《暗淡藍點》';
+const ARTIFACT = [ // 出土物的考古還原（故事設定）
+ ['器物','小型手抄冊（codex）：小牛皮紙（羊皮紙）縫製，木板封面外包皮革，金屬扣環'],
+ ['年代','約公元 6 世紀。不列顛的羅馬統治結束後約一百年，正是亞瑟王傳說的時代'],
+ ['文字','拉丁文夾雜早期威爾斯語，近似不列顛與愛爾蘭一帶的半安色爾（half-uncial）手寫體'],
+ ['墨水','鐵膽墨水（橡癭加硫酸亞鐵），褪成褐色'],
+ ['狀態','受潮，邊緣碳化，只剩最後幾頁字跡尚可辨認']
+];
+const PAGES = [ // 梅林的冊子，一頁一個陣列
+ [['若你讀到這一頁，代表藥已經生效，你也已經醒來了。\n我是梅林。以下是你醒來之前，發生的事。']],
+ [['藏在背後的那個女巫，不是別人，正是亞瑟王的王妃——桂妮薇兒。\n至少，所有人都是這麼以為的。']],
+ [['最後，我保住了 John，也保住了 Anna。'],['那位王妃，終於被查明：她根本不是桂妮薇兒，只是一個女巫假扮的。\n真正的桂妮薇兒，不久之後也被找到了。']],
+ [['John 看清了事實，也經歷了這一切之後，終於向 Anna 坦白了他的感情。\n兩個人，最終在一起。'],['那一次的主禮人，是亞瑟王。\n我，則是見證人。','q']],
+ [['可是之後，圓桌武士開始自相殘殺，大家漸漸失去了蹤影。'],['亞瑟王最後被一個年輕人刺穿了脖子，那個年輕人，名叫莫德雷德。\n兩個人互相殘殺，都死在了沙場上。']],
+ [['John 和 Anna 逃離了一切。\n有人說，曾經在某個地方見過他們。也有人說，他們死在了那場混亂裡。'],['總之，這些人最終都會離開這個世界的。\n而我，則是回到了我該去的地方，一個無人找得到的地方。','q']],
+ [['最後，告訴你一件事。\n那一紅一藍的兩瓶藥，其實是同一種。','q'],['我只是想看看，在沒有辦法選對的時候，你們會怎麼選。','me2']]
+];
+// ===== 以下為程式 =====
+const $=id=>document.getElementById(id);
+const stage=$('stage'),nx=$('next'),pv=$('prev');
+let bottle='',pg=0,timers=[];
+const later=(t,f)=>{timers.push(setTimeout(f,t*1000))};
+function clear(){timers.forEach(clearTimeout);timers=[];stage.innerHTML='';nx.style.display='none';pv.style.display='none'}
+function setNext(label,fn,t){later(t||0,()=>{nx.textContent=label;nx.style.display='block';nx.onclick=fn})}
+function say(arr,start){
+ arr.forEach((x,i)=>{const p=document.createElement('p');p.textContent=x[0];if(x[1])p.className=x[1];p.style.animationDelay=((start||0)+i*GAP+.2)+'s';stage.appendChild(p)});
+ return (start||0)+arr.length*GAP+.6;
+}
+function head(t){const p=document.createElement('p');p.className='ch';p.textContent=t;stage.appendChild(p)}
+const BOTTLE=c=>'<svg viewBox="0 0 60 100" aria-hidden="true"><rect x="23" y="4" width="14" height="10" rx="2" fill="#7a5a34"/><rect x="26" y="14" width="8" height="16" fill="#c9d6d2"/><path d="M26 30Q6 44 8 74Q10 94 30 94Q50 94 52 74Q54 44 34 30Z" fill="'+c+'" stroke="#c9d6d2" stroke-width="2.5"/><path d="M18 60Q19 50 25 46" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" opacity=".6"/></svg>';
+// ---- 一：抉擇 ----
+function ch1(){
+ clear();document.body.className='';head('一　抉擇');
+ const t=say([['梅林把兩只小瓶，放在 John 和 Anna 的面前。\n一瓶是藍的，一瓶是紅的。'],['「選一瓶。」梅林說，「其餘的，交給時間。」','q']]);
+ later(t,()=>{const d=document.createElement('div');d.className='bottles';
+  [['藍','#3b6fd0','blue'],['紅','#c4473f','red']].forEach(([n,c,k])=>{const b=document.createElement('button');b.className='bottle';b.innerHTML=BOTTLE(c)+n;b.setAttribute('aria-label',n+'色的瓶子');b.onclick=()=>pick(n,k);d.appendChild(b)});
+  stage.appendChild(d)});
+}
+function pick(n,k){
+ bottle=k;log(n,'bottle-'+k);clear();head('一　抉擇');
+ const t=say([['你們選了那瓶'+n+'色的。'],['John 接過瓶子，一飲而盡。\n眼前的一切慢慢退去，他失去了意識。']]);
+ setNext('……',ch2,t);
+}
+// ---- 二：2026 ----
+function ch2(){
+ clear();document.body.className='modern';log('ch2','chapter');head('二　2026');
+ const t=say([['2026 年。\n亞瑟王時期遺址，發掘滿一個月的早晨。'],[NAME+'從帳篷裡坐起來。\n他不知道，剛才夢到的，到底是什麼。'],['帳篷外忽然傳來急促的腳步聲，一名考古隊員衝了進來：'],['「隊長！我們挖到了一個關鍵的古物！」','q'],['他的手裡，捧著一本老舊的冊子。']]);
+ later(t,()=>{const c=document.createElement('div');c.className='card';c.innerHTML='<b>出土物記錄</b>'+ARTIFACT.map(r=>'<div><span>'+r[0]+'</span><span>'+r[1]+'</span></div>').join('');stage.appendChild(c)});
+ setNext('翻開冊子',()=>{pg=0;ch3()},t+1.2);
+}
+// ---- 三：梅林的冊子 ----
+const fol=i=>'FOL. '+(Math.floor(i/2)+1)+(i%2?'v':'r');
+function ch3(){clear();document.body.className='codex';if(pg===0)log('ch3','chapter');drawPage()}
+function drawPage(){
+ stage.innerHTML='';const d=document.createElement('div');d.className='page';d.innerHTML='<div class="fol">'+fol(pg)+'</div>';
+ PAGES[pg].forEach(x=>{const p=document.createElement('p');p.textContent=x[0];if(x[1])p.className=x[1];d.appendChild(p)});
+ stage.appendChild(d);
+ pv.style.display=pg>0?'block':'none';pv.onclick=()=>{pg--;drawPage()};
+ nx.style.display='block';nx.textContent=pg<PAGES.length-1?'翻頁':'合上冊子';
+ nx.onclick=()=>{if(pg<PAGES.length-1){pg++;drawPage()}else ch4()};
+}
+// ---- 四：藍點 ----
+function ch4(){
+ clear();document.body.className='night';log('ch4','chapter');head('三　藍點');
+ let t=say([[NAME+'放下了冊子。\n帳篷外，探照燈照著工地，遠處什麼聲音也沒有。'],['他想起卡爾・薩根在《暗淡藍點》裡說過的一段話：']]);
+ const sg=[[SAGAN_SHORT,'q']];if(SAGAN_FULL)sg.push([SAGAN_FULL,'sg']);sg.push([SAGAN_CREDIT,'sg']);
+ t=say(sg,t);
+ t=say([['也許，我們終將只是歷史裡的一個藍點。'],['我決定，也把這封書信，和這一步，交給我心中的那一個 Anna。\n或許我並沒有那麼勇敢。\n但我覺得，也許有一天，我們終將被歷史淹沒。'],['不如，就跨出去，改變歷史，改變我自己吧！','me']],t);
+ later(t,()=>{const e=document.createElement('div');e.className='end';e.textContent='完';stage.appendChild(e);
+  if(CODES.end){const c=document.createElement('div');c.className='code';c.style.animationDelay='.8s';c.innerHTML='<small>把這組數字傳到群組</small><b>'+CODES.end+'</b>';stage.appendChild(c)}
+  nx.textContent='從頭再讀一次';nx.style.display='block';nx.onclick=()=>{pg=0;ch1()}});
+}
+// ---- 紀錄 ----
+const LK='libra_log';
+const getLog=()=>{try{return JSON.parse(localStorage.getItem(LK)||'[]')}catch(e){return[]}};
+function log(input,state){
+ const e={week:WEEK,time:new Date().toISOString(),input,state};
+ try{const a=getLog();a.push(e);localStorage.setItem(LK,JSON.stringify(a))}catch(x){}
+ if(ENDPOINT){try{fetch(ENDPOINT,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(e)})}catch(x){}}
+ drawLog();
+}
+const det=e=>e.input!==undefined?e.input:((e.left||[]).join('+')+' | '+(e.right||[]).join('+'));
+function drawLog(){
+ $('logtbl').innerHTML='<tr><th>時間</th><th>週</th><th>輸入</th><th>狀態</th></tr>'+getLog().slice().reverse().map(e=>'<tr><td>'+e.time.slice(5,16).replace('T',' ')+'</td><td>'+e.week+'</td><td>'+det(e)+'</td><td>'+e.state+'</td></tr>').join('');
+}
+$('exp').onclick=()=>{const csv='week,time,input,state\n'+getLog().map(e=>[e.week,e.time,'"'+det(e)+'"',e.state].join(',')).join('\n');const b=new Blob(['\ufeff'+csv],{type:'text/csv'});const l=document.createElement('a');l.href=URL.createObjectURL(b);l.download='libra_log.csv';l.click()};
+$('clr').onclick=()=>{if(confirm('清空此瀏覽器的紀錄？')){localStorage.removeItem(LK);drawLog()}};
+if(location.hash==='#admin'){$('admin').style.display='block';drawLog()}
+ch1();
+</script>
+</body>
+</html>
